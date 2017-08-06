@@ -1,0 +1,48 @@
+# www to no-www https
+#www.example.com {
+#  redir https://example.com{uri}
+#}
+
+#example.com {
+localhost:80 {
+  root /var/www/html
+  gzip
+  #tls skippy@skippy.net
+
+  # if you want to block all WP comments, try uncommenting this:
+  #internal /wp-comments-post.php
+
+  # WordPress rewrites
+  rewrite {
+    if {path} not_match ^\/wp-admin
+    to {path} {path}/ /index.php?_url={uri}
+  }
+  # the following two rewrites are only for sub-domain multi-site.
+  # if you use top-level domain mapping, you probably don't need these.
+  rewrite {
+    r ^([_0-9a-zA-Z-]+/)?(wp-(content|admin|includes).*)
+    to ${2}
+  }
+  rewrite {
+    if {path} not_match ^\/wp-admin
+    r ^([_0-9a-zA-Z-]+/)?(.*\.php)$
+    to ${2}
+  }
+
+  # here is where we send PHP requests to the php-fpm container
+  fastcgi / 127.0.0.1:9000 php
+
+  # don't log WP Ajax calls. It clutters up the logs.
+  log /wp-admin/admin-ajax.php /dev/null
+
+  log / /var/log/caddy/caddy.log "{when_iso} {hostonly} {remote} {method} {uri} {proto} {status} {size}" {
+    rotate_size 100
+    rotate_age 8
+    rotate_keep 10
+  }
+  errors /var/log/caddy/error.log {
+    rotate_size 50 # Rotate after 50 MB
+    rotate_age 7 # Keep rotated files for 7 days
+    rotate_keep 5 # Keep at most 5 log files
+  }
+}

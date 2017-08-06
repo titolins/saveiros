@@ -1,0 +1,16 @@
+version: '2'
+services:
+  mariadb:
+    image: mariadb:latest
+    volumes:
+      - /var/lib/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=""
+  wordpress:
+    image: skpy:php
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/www/html:/var/www/html
+    links:
+      - "mariadb"
