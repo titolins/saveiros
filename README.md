@@ -14,6 +14,7 @@ sudo chown -R www-data:www-data html
 curl https://getcaddy.com | bash
 ```
 * copy caddy.service to `/etc/systemd/system`
+* start and enable service
 * copy Caddyfile to `/etc/caddy`
 
 * install docker:
